@@ -7,7 +7,7 @@ import { getProjectInfo } from "../../railway/api";
 
 export const data = new SlashCommandBuilder()
   .setName("status")
-  .setDescription("📡 Get real-time status of Railway projects");
+  .setDescription("📡 Obtener estado en tiempo real de proyectos Railway");
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   await interaction.deferReply();
@@ -16,34 +16,34 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!project) {
     const errorEmbed = new EmbedBuilder()
-      .setTitle("⚠️ SYSTEM MALFUNCTION")
+      .setTitle("⚠️ FALLO DEL SISTEMA")
       .setColor("#FF0055") // Neon Red
       .setDescription(
-        "Could not establish uplink to Railway Orbital Station.\n\n**Possible Causes:**\n1. Invalid `RAILWAY_API_TOKEN`\n2. Token lacks `Project` scope\n3. System Reboot Required",
+        "No se pudo establecer enlace con la Estación Orbital Railway.\n\n**Posibles causas:**\n1. `RAILWAY_API_TOKEN` inválido (o `RAILWAY_TOKEN`)\n2. El token carece de alcance `Project`\n3. Se requiere reinicio del sistema",
       )
-      .setFooter({ text: "ERROR CODE: 401_UNAUTHORIZED_OR_BAD_QUERY" });
+      .setFooter({ text: "CÓDIGO DE ERROR: 401_NO_AUTORIZADO" });
 
     await interaction.editReply({ embeds: [errorEmbed] });
     return;
   }
 
   const embed = new EmbedBuilder()
-    .setTitle(`🔮 SYSTEM STATUS // ${project.name}`)
+    .setTitle(`🔮 ESTADO DEL SISTEMA // ${project.name}`)
     .setColor("#00F0FF")
     .addFields(
       {
-        name: "Services",
-        value: `${project.services.edges.length} Active`,
+        name: "Servicios",
+        value: `${project.services.edges.length} Activos`,
         inline: true,
       },
       {
-        name: "Latest Deployment",
-        value: project.deployments.edges[0]?.node.status || "UNKNOWN",
+        name: "Último Despliegue",
+        value: project.deployments.edges[0]?.node.status || "DESCONOCIDO",
         inline: true,
       },
     )
     .setTimestamp()
-    .setFooter({ text: "Railway API Connected" });
+    .setFooter({ text: "Conectado a API Railway" });
 
   await interaction.editReply({ embeds: [embed] });
 };

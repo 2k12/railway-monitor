@@ -7,7 +7,7 @@ import { getProjectInfo } from "../../railway/api";
 
 export const data = new SlashCommandBuilder()
   .setName("logs")
-  .setDescription("📜 View recent deployment history");
+  .setDescription("📜 Ver historial reciente de despliegues");
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   await interaction.deferReply();
@@ -16,10 +16,10 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!project) {
     const errorEmbed = new EmbedBuilder()
-      .setTitle("🚫 ACCESS DENIED")
+      .setTitle("🚫 ACCESO DENEGADO")
       .setColor("#FF0055")
       .setDescription(
-        "Unable to retrieve flight recorder logs.\nCheck `RAILWAY_API_TOKEN` configuration.",
+        "No se pudieron recuperar los registros de vuelo.\nVerifica la configuración de `RAILWAY_API_TOKEN`.",
       )
       .setTimestamp();
 
@@ -34,12 +34,12 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       const d = edge.node;
       const icon =
         d.status === "SUCCESS" ? "✅" : d.status === "FAILED" ? "❌" : "⏳";
-      return `${icon} [${d.id.substring(0, 6)}] ${d.status} - ${new Date(d.createdAt).toLocaleString()}`;
+      return `${icon} [${d.id.substring(0, 6)}] ${d.status} - ${new Date(d.createdAt).toLocaleString("es-ES")}`;
     })
     .join("\n");
 
   const embed = new EmbedBuilder()
-    .setTitle(`📜 DEPLOYMENT LOGS // ${project.name}`)
+    .setTitle(`📜 REGISTROS DE DESPLIEGUE // ${project.name}`)
     .setColor("#FF00FF") // Neon Magenta
     .setDescription(`\`\`\`log\n${logContent}\n\`\`\``)
     .setTimestamp();
