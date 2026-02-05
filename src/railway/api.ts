@@ -1,7 +1,7 @@
 import { GraphQLClient, gql } from "graphql-request";
 import { config } from "../config";
 
-const endpoint = "https://backboard.railway.app/graphql/v2";
+const endpoint = "https://backboard.railway.com/graphql/v2";
 
 const client = new GraphQLClient(endpoint, {
   headers: {
