@@ -18,7 +18,7 @@ export const getProjectInfo = async (projectId?: string) => {
     : "NONE";
   console.log(`📡 [API] Connecting to Railway with Token: ${maskedToken}`);
 
-  // 1. First, discover who we are (get Project ID from Token)
+  // 1. Discover Context (Project & Environment IDs)
   const metaQuery = gql`
     query GetTokenMeta {
       projectToken {
@@ -28,99 +28,55 @@ export const getProjectInfo = async (projectId?: string) => {
     }
   `;
 
-  let targetProjectId = config.RAILWAY_PROJECT_ID;
+  let targetEnvId = null;
 
-  if (!targetProjectId) {
-    try {
-      console.log("🔍 [API] Discovering Project ID via Token...");
-      const metaData: any = await client.request(metaQuery);
-      if (metaData.projectToken) {
-        targetProjectId = metaData.projectToken.projectId;
-        console.log(`✅ [API] Discovered Project ID: ${targetProjectId}`);
-      }
-    } catch (metaError) {
-      console.warn(
-        "⚠️ Could not fetch Project Token metadata (might be a User Token). Ignoring...",
-        metaError,
-      );
+  try {
+    console.log("🔍 [API] Authenticating & Discovering Context...");
+    const metaData: any = await client.request(metaQuery);
+    if (metaData.projectToken) {
+      targetEnvId = metaData.projectToken.environmentId;
+      console.log(`✅ [API] Authenticated as Environment: ${targetEnvId}`);
     }
+  } catch (metaError) {
+    console.warn(
+      "⚠️ Meta-discovery failed. Token might be invalid or not a Project Token.",
+      metaError,
+    );
+    return null;
   }
 
-  // 2. Query Project Data
-  if (targetProjectId) {
-    console.log(`🎯 [API] Fetching details for Project ID: ${targetProjectId}`);
-    const projectQuery = gql`
-      query GetProject($id: String!) {
-        project(id: $id) {
-          id
+  if (!targetEnvId) {
+    console.error("❌ Could not determine Environment ID. Aborting.");
+    return null;
+  }
+
+  // 2. Query Environment Data (Scoped)
+  // We query the *Environment* because Project Tokens are scoped to it.
+  // Accessing 'project' root field is forbidden, but we can access project *via* environment.
+  console.log(`🎯 [API] Fetching data for Environment: ${targetEnvId}`);
+  const envQuery = gql`
+    query GetEnvironment($id: String!) {
+      environment(id: $id) {
+        id
+        name
+        project {
           name
-          deployments {
-            edges {
-              node {
-                id
-                status
-                createdAt
-                meta
-              }
-            }
-          }
-          services {
-            edges {
-              node {
-                id
-                name
-              }
+        }
+        deployments(first: 5) {
+          edges {
+            node {
+              id
+              status
+              createdAt
+              meta
             }
           }
         }
-      }
-    `;
-
-    try {
-      const data: any = await client.request(projectQuery, {
-        id: targetProjectId,
-      });
-      return data.project;
-    } catch (error: any) {
-      console.error("🔥 Failed to fetch specific project:", error);
-      if (error.response) {
-        console.error(
-          "📄 Response Body:",
-          JSON.stringify(error.response, null, 2),
-        );
-      }
-      return null;
-    }
-  }
-
-  // 3. Fallback: User Token approach (List all projects)
-  console.log(
-    "⚠️ [API] No Project ID found. Attempting User Token fallback (listing all projects)...",
-  );
-  const fallbackQuery = gql`
-    query GetAllProjects {
-      projects {
-        edges {
-          node {
-            id
-            name
-            deployments {
-              edges {
-                node {
-                  id
-                  status
-                  createdAt
-                  meta
-                }
-              }
-            }
-            services {
-              edges {
-                node {
-                  id
-                  name
-                }
-              }
+        services {
+          edges {
+            node {
+              id
+              name
             }
           }
         }
@@ -129,17 +85,17 @@ export const getProjectInfo = async (projectId?: string) => {
   `;
 
   try {
-    const data: any = await client.request(fallbackQuery);
-    const projects = data.projects.edges.map((e: any) => e.node);
-    if (!projects.length) {
-      console.warn("⚠️ No projects found for this token.");
-    }
-    return projects[0];
+    const data: any = await client.request(envQuery, { id: targetEnvId });
+    const env = data.environment;
+
+    // Transform to match the shape expected by commands
+    return {
+      name: env.project.name, // Project Name
+      deployments: env.deployments,
+      services: env.services,
+    };
   } catch (error: any) {
-    console.error(
-      "🔥 Failed to fetch Railway data (User Token Fallback):",
-      error,
-    );
+    console.error("🔥 Failed to fetch Environment data:", error);
     if (error.response) {
       console.error(
         "📄 Response Body:",
