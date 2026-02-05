@@ -42,13 +42,28 @@ export const getProjectInfo = async (projectId?: string) => {
     }
   `;
 
+  // Debug: Log headers to confirm token is being picked up
+  const maskedToken = config.RAILWAY_API_TOKEN
+    ? `${config.RAILWAY_API_TOKEN.substring(0, 4)}...${config.RAILWAY_API_TOKEN.substring(config.RAILWAY_API_TOKEN.length - 4)}`
+    : "NONE";
+  console.log(`📡 [API] Connecting to Railway with Token: ${maskedToken}`);
+
   try {
     const data: any = await client.request(query);
     // Return the first project
     const projects = data.projects.edges.map((e: any) => e.node);
+    if (!projects.length) {
+      console.warn("⚠️ No projects found for this token.");
+    }
     return projects[0];
-  } catch (error) {
-    console.error("Failed to fetch Railway data:", error);
+  } catch (error: any) {
+    console.error("🔥 Failed to fetch Railway data:", error);
+    if (error.response) {
+      console.error(
+        "📄 Response Body:",
+        JSON.stringify(error.response, null, 2),
+      );
+    }
     return null;
   }
 };
