@@ -30,33 +30,33 @@ const getStatusConfig = (status: string) => {
       return {
         color: THEME.colors.SUCCESS,
         icon: THEME.icons.SUCCESS,
-        text: "SYSTEM OPERATIONAL",
+        text: "SISTEMA OPERATIVO",
       };
     case "FAILED":
     case "CRASHED":
       return {
         color: THEME.colors.FAILURE,
         icon: THEME.icons.FAILURE,
-        text: "CRITICAL FAILURE",
+        text: "FALLO CRÍTICO",
       };
     case "BUILDING":
     case "DEPLOYING":
       return {
         color: THEME.colors.BUILDING,
         icon: THEME.icons.BUILDING,
-        text: "DEPLOYMENT IN PROGRESS",
+        text: "DESPLIEGUE EN PROGRESO",
       };
     case "QUEUED":
       return {
         color: THEME.colors.QUEUED,
         icon: THEME.icons.QUEUED,
-        text: "IN QUEUE",
+        text: "EN COLA",
       };
     default:
       return {
         color: THEME.colors.DEFAULT,
         icon: THEME.icons.DEFAULT,
-        text: `STATUS: ${status}`,
+        text: `ESTADO: ${status}`,
       };
   }
 };
@@ -82,20 +82,20 @@ router.post("/", async (req: Request, res: Response) => {
       .setDescription(
         `
 \`\`\`bash
-Project: ${project.name}
-Env:     ${environment.name}
-Status:  ${deployment.status}
+Proyecto: ${project.name}
+Entorno:  ${environment.name}
+Estado:   ${deployment.status}
 \`\`\`
 `,
       )
       .addFields(
         {
-          name: "🆔 Deployment ID",
+          name: "🆔 ID Despliegue",
           value: `\`${deployment.id.substring(0, 8)}\``,
           inline: true,
         },
         {
-          name: "🌿 Branch",
+          name: "🌿 Rama",
           value: deployment.meta?.branch
             ? `\`${deployment.meta.branch}\``
             : "`N/A`",
@@ -104,7 +104,7 @@ Status:  ${deployment.status}
       )
       .setTimestamp()
       .setFooter({
-        text: "RAILWAY OBSERVATORY SYSTEM v1.0",
+        text: "SISTEMA DE OBSERVATORIO RAILWAY v1.0",
         iconURL: "https://railway.app/brand/logo-light.png",
       });
 
@@ -112,7 +112,7 @@ Status:  ${deployment.status}
     if (deployment.meta?.commitMessage) {
       embed.addFields({
         name: "📝 Commit",
-        value: `> *${deployment.meta.commitMessage}* \n> — \`${deployment.meta.commitAuthor || "Unknown"}\``,
+        value: `> *${deployment.meta.commitMessage}* \n> — \`${deployment.meta.commitAuthor || "Desconocido"}\``,
       });
     }
 
