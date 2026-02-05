@@ -15,7 +15,15 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const project = await getProjectInfo();
 
   if (!project) {
-    await interaction.editReply("❌ Could not fetch project data.");
+    const errorEmbed = new EmbedBuilder()
+      .setTitle("🚫 ACCESS DENIED")
+      .setColor("#FF0055")
+      .setDescription(
+        "Unable to retrieve flight recorder logs.\nCheck `RAILWAY_API_TOKEN` configuration.",
+      )
+      .setTimestamp();
+
+    await interaction.editReply({ embeds: [errorEmbed] });
     return;
   }
 

@@ -15,9 +15,15 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const project = await getProjectInfo();
 
   if (!project) {
-    await interaction.editReply(
-      "❌ Could not fetch project data. Check `RAILWAY_API_TOKEN`.",
-    );
+    const errorEmbed = new EmbedBuilder()
+      .setTitle("⚠️ SYSTEM MALFUNCTION")
+      .setColor("#FF0055") // Neon Red
+      .setDescription(
+        "Could not establish uplink to Railway Orbital Station.\n\n**Possible Causes:**\n1. Invalid `RAILWAY_API_TOKEN`\n2. Token lacks `Project` scope\n3. System Reboot Required",
+      )
+      .setFooter({ text: "ERROR CODE: 401_UNAUTHORIZED_OR_BAD_QUERY" });
+
+    await interaction.editReply({ embeds: [errorEmbed] });
     return;
   }
 
