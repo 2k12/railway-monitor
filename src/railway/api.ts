@@ -51,17 +51,15 @@ export const getProjectInfo = async (projectId?: string) => {
   }
 
   // 2. Query Environment Data (Scoped)
-  // We query the *Environment* because Project Tokens are scoped to it.
-  // Accessing 'project' root field is forbidden, but we can access project *via* environment.
   console.log(`🎯 [API] Fetching data for Environment: ${targetEnvId}`);
+
+  // Note: Project Tokens are restricted. We cannot query 'project' or 'services' from Environment.
+  // We will fetch what we can (Deployments) and shim the rest.
   const envQuery = gql`
     query GetEnvironment($id: String!) {
       environment(id: $id) {
         id
         name
-        project {
-          name
-        }
         deployments(first: 5) {
           edges {
             node {
@@ -69,14 +67,6 @@ export const getProjectInfo = async (projectId?: string) => {
               status
               createdAt
               meta
-            }
-          }
-        }
-        services {
-          edges {
-            node {
-              id
-              name
             }
           }
         }
@@ -88,11 +78,11 @@ export const getProjectInfo = async (projectId?: string) => {
     const data: any = await client.request(envQuery, { id: targetEnvId });
     const env = data.environment;
 
-    // Transform to match the shape expected by commands
+    // Transform to match the shape expected by downstream commands (Partial Compatibility)
     return {
-      name: env.project.name, // Project Name
+      name: `Env: ${env.name}`, // We can only see Environment Name with this token
       deployments: env.deployments,
-      services: env.services,
+      services: { edges: [] }, // Cannot list services with Project Token
     };
   } catch (error: any) {
     console.error("🔥 Failed to fetch Environment data:", error);
