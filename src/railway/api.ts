@@ -42,12 +42,6 @@ export const getProjectInfo = async (projectId?: string) => {
     }
   `;
 
-  // Debug: Log headers to confirm token is being picked up
-  const maskedToken = config.RAILWAY_API_TOKEN
-    ? `${config.RAILWAY_API_TOKEN.substring(0, 4)}...${config.RAILWAY_API_TOKEN.substring(config.RAILWAY_API_TOKEN.length - 4)}`
-    : "NONE";
-  console.log(`📡 [API] Connecting to Railway with Token: ${maskedToken}`);
-
   try {
     const data: any = await client.request(query);
     // Return the first project

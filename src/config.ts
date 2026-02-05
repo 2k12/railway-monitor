@@ -8,6 +8,7 @@ const envSchema = z.object({
   // Support both RAILWAY_API_TOKEN (my instruction) and RAILWAY_TOKEN (Railway default recomendation)
   RAILWAY_API_TOKEN: z.string().optional(),
   RAILWAY_TOKEN: z.string().optional(),
+  RAILWAY_PROJECT_ID: z.string().optional(),
   CHANNEL_ID: z.string().min(1, "CHANNEL_ID is required for notifications"),
   PORT: z.string().default("3000"),
   NODE_ENV: z.enum(["development", "production"]).default("development"),
